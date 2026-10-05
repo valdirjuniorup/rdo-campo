@@ -562,9 +562,11 @@ window.RDO_CAMPO = true;
         msg.style.color = "inherit"; msg.textContent = "Conferindo…";
         try { cfg = await getCfg(chave); } catch (e) { msg.style.color = "#b91c1c"; msg.textContent = e && e.message === "chave" ? "Código inválido." : "Não consegui falar com a central. Tente de novo."; return; }
         msg.textContent = "";
-        const lista = ((cfg && cfg.func) || []).slice().sort((a, b) => String(a.n).localeCompare(String(b.n)));
+        const todos = ((cfg && cfg.func) || []).filter(x => x && x.n);
+        const resp = todos.filter(x => /encarregad|engenheir|ger[eê]n|gestor|diretor/i.test(x.f || ""));
+        const lista = (resp.length ? resp : todos).slice().sort((a, b) => String(a.n).localeCompare(String(b.n)));
         const sel = ov.querySelector("#cp-nome");
-        sel.innerHTML = `<option value="">Escolha seu nome</option>` + lista.map(x => `<option>${String(x.n).replace(/[<>&"]/g, "")}</option>`).join("") + `<option value="__outro">Outro (digitar)</option>`;
+        sel.innerHTML = `<option value="">Escolha seu nome</option>` + lista.map(x => `<option value="${String(x.n).replace(/[<>&"]/g, "")}">${String(x.n).replace(/[<>&"]/g, "")}${x.f ? " · " + String(x.f).replace(/[<>&"]/g, "") : ""}</option>`).join("") + `<option value="__outro">Outro (digitar)</option>`;
         ov.querySelector("#cp-passo2").hidden = false; ov.querySelector("#cp-chave").disabled = true;
         return;
       }
