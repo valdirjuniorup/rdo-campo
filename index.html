@@ -418,7 +418,7 @@ textarea{resize:vertical;min-height:70px}
 // App de campo · guarda tudo no celular e envia para a central (Google Drive) quando houver internet
 window.RDO_CAMPO = true;
 (function () {
-  const SCRIPT = "https://script.google.com/macros/s/AKfycbzWzjYmAGJwk5BEBeq0PbecNyX6PzktWaH-WC1vVR_30lbvlk72A1vgqG4jbmomJmWc/exec";
+  const SCRIPT = "https://script.google.com/macros/s/AKfycbxpFsgClnNnQ3c9Ecay1qqqL2YK8oWWRYK0fIse_mqzovpCPcTpwS9I8nb47VLjHSBq/exec";
   const L = k => "campo-" + k;
   const lget = (k, d) => { try { const v = JSON.parse(localStorage.getItem(L(k))); return v == null ? d : v; } catch (e) { return d; } };
   const lput = (k, v) => { try { localStorage.setItem(L(k), JSON.stringify(v)); } catch (e) {} };
@@ -546,13 +546,23 @@ window.RDO_CAMPO = true;
   function telaInicial(resolve) {
     const ov = document.createElement("div"); ov.className = "campo-ov";
     ov.innerHTML = `<div class="campo-box"><img src="${(document.querySelector(".logo") || {}).src || ""}" alt="" style="max-width:180px;margin-bottom:10px"><h2>RDO · App de campo</h2>
-      <p class="note">Primeiro acesso: precisa de internet só agora. Depois o app abre e salva sem sinal.</p>
+      <p class="note">${lget("chave", "") ? "Escolha quem vai preencher neste celular." : "Primeiro acesso: precisa de internet só agora. Depois o app abre e salva sem sinal."}</p>
       <label class="f">Código de acesso<input type="text" id="cp-chave" autocapitalize="characters" placeholder="Fornecido pelo escritório"></label>
       <div id="cp-passo2" hidden><label class="f">Quem está preenchendo?<select id="cp-nome"></select></label></div>
       <p class="note" id="cp-msg" style="color:#b91c1c"></p>
       <button class="btn pri" id="cp-ok">Continuar</button></div>`;
     document.body.appendChild(ov);
     let cfg = null, chave = "";
+    const salva = lget("chave", "");
+    const montaNomes = (c) => {
+      const todos = ((c && c.func) || []).filter(x => x && x.n);
+      const resp = todos.filter(x => /encarregad|engenheir|ger[eê]n|gestor|diretor/i.test(x.f || ""));
+      const lista = (resp.length ? resp : todos).slice().sort((a, b) => String(a.n).localeCompare(String(b.n)));
+      const sel = ov.querySelector("#cp-nome");
+      sel.innerHTML = `<option value="">Escolha seu nome</option>` + lista.map(x => `<option value="${String(x.n).replace(/[<>&"]/g, "")}">${String(x.n).replace(/[<>&"]/g, "")}${x.f ? " · " + String(x.f).replace(/[<>&"]/g, "") : ""}</option>`).join("") + `<option value="__outro">Outro (digitar)</option>`;
+      ov.querySelector("#cp-passo2").hidden = false; ov.querySelector("#cp-chave").closest("label").hidden = !!salva; ov.querySelector("#cp-chave").disabled = true;
+    };
+    if (salva) { chave = salva; cfg = {func: ((D["config/func"] || {}).lista) || [], _local: true}; montaNomes(cfg); }
     ov.querySelector("#cp-ok").onclick = async () => {
       const msg = ov.querySelector("#cp-msg"); msg.textContent = "";
       if (!cfg) {
@@ -562,19 +572,14 @@ window.RDO_CAMPO = true;
         msg.style.color = "inherit"; msg.textContent = "Conferindo…";
         try { cfg = await getCfg(chave); } catch (e) { msg.style.color = "#b91c1c"; msg.textContent = e && e.message === "chave" ? "Código inválido." : "Não consegui falar com a central. Tente de novo."; return; }
         msg.textContent = "";
-        const todos = ((cfg && cfg.func) || []).filter(x => x && x.n);
-        const resp = todos.filter(x => /encarregad|engenheir|ger[eê]n|gestor|diretor/i.test(x.f || ""));
-        const lista = (resp.length ? resp : todos).slice().sort((a, b) => String(a.n).localeCompare(String(b.n)));
-        const sel = ov.querySelector("#cp-nome");
-        sel.innerHTML = `<option value="">Escolha seu nome</option>` + lista.map(x => `<option value="${String(x.n).replace(/[<>&"]/g, "")}">${String(x.n).replace(/[<>&"]/g, "")}${x.f ? " · " + String(x.f).replace(/[<>&"]/g, "") : ""}</option>`).join("") + `<option value="__outro">Outro (digitar)</option>`;
-        ov.querySelector("#cp-passo2").hidden = false; ov.querySelector("#cp-chave").disabled = true;
+        montaNomes(cfg);
         return;
       }
       let nome = ov.querySelector("#cp-nome").value;
       if (nome === "__outro") nome = (prompt("Seu nome") || "").trim();
       if (!nome) { msg.textContent = "Escolha seu nome."; return; }
-      perfil = {chave, nome}; lput("perfil", perfil);
-      await aplicaCfg(cfg);
+      perfil = {chave, nome}; lput("perfil", perfil); lput("chave", chave);
+      if (!cfg._local) await aplicaCfg(cfg);
       ov.remove(); resolve();
     };
   }
@@ -585,7 +590,7 @@ window.RDO_CAMPO = true;
     el.innerHTML = `<span></span> <button class="btn sm" type="button">Enviar agora</button> <a href="#" class="campo-troca">trocar usuário</a>`;
     sy.insertAdjacentElement("afterend", el);
     el.querySelector("button").onclick = () => { estado = ""; sincroniza(); };
-    el.querySelector(".campo-troca").onclick = e => { e.preventDefault(); if (OUT.size && !confirm(`Há ${OUT.size} RDO(s) ainda não enviadas. Elas continuam no celular. Trocar mesmo assim?`)) return; perfil = null; lput("perfil", null); location.reload(); };
+    el.querySelector(".campo-troca").onclick = e => { e.preventDefault(); if (OUT.size && !confirm(`Há ${OUT.size} RDO(s) ainda não enviadas. Elas continuam no celular. Trocar mesmo assim?`)) return; lput("chave", null); perfil = null; lput("perfil", null); location.reload(); };
     status("");
   }
   const pronto = new Promise(resolve => {
@@ -1780,7 +1785,7 @@ $("dl").onclick = async () => {
 };
 
 // ------------------------------------------------------------ app de campo (offline) · ponte pelo Drive
-const APP = {pasta: "1bwJdxQwKNruNYYr23pifhx7-h852-s6y", entrada: "11qT3kH8_2VIsYR2iC-n7lL42ybhL7bIt", proc: "1NpHcmiB9qWTrOxTfQ-2KDUG7arCqLG4g"};
+const APP = {pasta: "16yDRotqM7d-7QwpUL4UJbKDk7mQzUrgw", entrada: "1Gp52jTVnx4RIj4SHSKSJyYMpRfPWVydJ", proc: "1FyO-lYGGKgJ_FhViJD-RZLF-vPlevkLc"};
 let appInfo = {}, appMsg = "", appBusy = false;
 const strHash = t => { let h = 0; for (let i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) | 0; return String(h); };
 function appRender(){
