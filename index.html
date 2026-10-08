@@ -147,7 +147,7 @@ textarea{resize:vertical;min-height:70px}
 .pill.ok{background:var(--ok-soft);color:var(--ok)}.pill.bad{background:var(--bad-soft);color:var(--bad)}
 .empty{padding:18px;text-align:center;color:var(--muted)}
 /* abas */
-.tabs{position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--panel);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);padding-bottom:env(safe-area-inset-bottom,0px)}
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--panel);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(6,1fr);padding-bottom:env(safe-area-inset-bottom,0px)}
 .tabs button{border:0;background:none;padding:12px 4px 14px;font-family:var(--display);font-weight:600;font-size:13px;letter-spacing:.02em;text-transform:uppercase;color:var(--muted);cursor:pointer;border-top:4px solid transparent}
 .tabs button[aria-selected="true"]{color:var(--ink);border-top-color:var(--accent)}
 .danger{color:var(--bad)}
@@ -184,6 +184,17 @@ textarea{resize:vertical;min-height:70px}
       <p class="note" id="rdoState"></p>
     </div>
 
+    <div class="card" id="tipoCard">
+      <h2>Como foi o dia</h2>
+      <div class="chips" id="tipoDia"></div>
+      <div id="semBox" hidden style="margin-top:10px">
+        <b style="font-size:13px;color:var(--muted);font-weight:500">Motivo</b>
+        <div class="chips" id="semMot" style="margin-top:4px"></div>
+        <label class="f" style="margin-top:8px">Detalhe (opcional)<input type="text" id="f-semObs" placeholder="Ex.: chuva desde a madrugada, pista encharcada"></label>
+        <p class="note">Dia sem serviço: só clima, motivo e responsável são obrigatórios. Efetivo, ocorrências e fotos ficam opcionais; equipamentos, serviços e programação ficam ocultos.</p>
+      </div>
+    </div>
+
     <div class="card">
       <h2>Clima e condições</h2>
       <div class="clima">
@@ -196,37 +207,40 @@ textarea{resize:vertical;min-height:70px}
     <div class="card">
       <h2>Efetivo <small id="efTot">0 pessoas</small></h2>
       <div class="list" id="efList"></div><datalist id="nomesDl"></datalist>
-      <div class="add"><input type="text" id="efNew" placeholder="Outra função (ex.: Topógrafo)"><button class="btn" id="efAdd">Incluir</button></div>
+      <div class="add"><select id="efNewSel" aria-label="Incluir função"></select><input type="text" id="efNew" placeholder="Nome da função" hidden><button class="btn" id="efAdd">Incluir</button></div>
     </div>
 
-    <div class="card">
+    <div class="card" data-ss>
       <h2>Equipamentos <small id="eqTot">0 em uso</small></h2>
       <p class="note">Escolha o tipo e se é próprio (prefixo da frota) ou locado (empresa, equipamento e placa). Os equipamentos alocados na obra já vêm na lista.</p>
       <div id="eqList"></div>
       <div class="row" style="margin-top:8px"><button class="btn" id="eqAdd">+ Incluir equipamento</button></div>
     </div>
 
-    <div class="card">
+    <div class="card" data-ss>
       <h2>Acompanhamento diário · serviços <small id="svTot">0</small></h2>
       <p class="note" id="svHint">Para cada serviço: quantidade prevista para o dia, realizada e o saldo.</p>
       <div id="svList"></div>
       <button class="btn" id="svAdd">Adicionar serviço</button>
     </div>
 
-    <div class="card">
+    <div class="card" data-ss>
       <h2>Programação do dia seguinte · serviços <small id="pgTot">0</small></h2>
-      <p class="note">O que estiver aqui entra sozinho como previsto no RDO do próximo dia.</p>
-      <div id="pgList"></div>
-      <button class="btn" id="pgAdd">Programar serviço</button>
+      <label style="display:flex;gap:8px;align-items:center;font-weight:600;margin:4px 0 8px"><input type="checkbox" id="f-obraFin" style="width:20px;height:20px"> Obra finalizada · sem programação para o dia seguinte</label>
+      <div id="pgBox">
+        <p class="note">O que estiver aqui entra sozinho como previsto no RDO do próximo dia.</p>
+        <div id="pgList"></div>
+        <button class="btn" id="pgAdd">Programar serviço</button>
+      </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-ss>
       <h2>Acompanhamento diário · manutenção <small id="mnTot">0</small></h2>
       <div id="mnList"></div>
       <button class="btn" id="mnAdd">Adicionar manutenção</button>
     </div>
 
-    <div class="card">
+    <div class="card" data-ss data-of>
       <h2>Programação do dia seguinte · manutenção <small id="mpTot">0</small></h2>
       <div id="mpList"></div>
       <button class="btn" id="mpAdd">Programar manutenção</button>
@@ -241,7 +255,7 @@ textarea{resize:vertical;min-height:70px}
       <label class="f">Observações da fiscalização<textarea id="f-fisc" rows="2"></textarea></label>
     </div>
 
-    <div class="card">
+    <div class="card" data-ss>
       <h2>Localização da frente</h2>
       <p class="note">Cole as coordenadas ou o link do Google Maps (no Maps: toque e segure no ponto, depois copie). Para o mapa, tire um print da tela e adicione aqui.</p>
       <div class="g2 keep">
@@ -303,6 +317,28 @@ textarea{resize:vertical;min-height:70px}
   </section>
 
   <!-- ===================== OBRAS ===================== -->
+  <section class="wrap" id="v-ger" hidden style="gap:14px">
+    <div class="card">
+      <h2>Últimas RDOs de todas as obras <small id="gTot"></small></h2>
+      <div class="kpi" id="gKpi"></div>
+      <div class="chips" id="gPer"></div>
+      <div class="chips" id="gSt" style="margin-top:8px"></div>
+      <div class="g2" style="margin-top:8px">
+        <label class="f">Obra<select id="gObra"><option value="">Todas as obras</option></select></label>
+        <label class="f">Ordenar por<select id="gOrd"><option value="em">Última atualização</option><option value="data">Data do RDO</option></select></label>
+      </div>
+    </div>
+    <div class="card" id="gSemCard">
+      <h2>Obras sem RDO hoje <small id="gSemTot"></small></h2>
+      <div id="gSem" class="chips"></div>
+    </div>
+    <div class="card">
+      <h2>RDOs</h2>
+      <p class="note">Toque numa RDO para abrir. Aparecem as RDOs preenchidas na página e as que chegaram do app de campo.</p>
+      <div class="hist" id="gList"></div>
+    </div>
+  </section>
+
   <section class="wrap" id="v-eq" hidden style="gap:14px">
     <div class="card">
       <h2>Resumo de equipamentos <small id="fqTot"></small></h2>
@@ -402,6 +438,7 @@ textarea{resize:vertical;min-height:70px}
 <nav class="tabs" role="tablist">
   <button role="tab" id="t-rdo" aria-selected="true" aria-controls="v-rdo">RDO</button>
   <button role="tab" id="t-hist" aria-selected="false" aria-controls="v-hist">Histórico</button>
+  <button role="tab" id="t-ger" aria-selected="false" aria-controls="v-ger">Geral</button>
   <button role="tab" id="t-eq" aria-selected="false" aria-controls="v-eq">Equip.</button>
   <button role="tab" id="t-fun" aria-selected="false" aria-controls="v-fun">Equipe</button>
   <button role="tab" id="t-obras" aria-selected="false" aria-controls="v-obras">Obras</button>
@@ -550,6 +587,7 @@ window.RDO_CAMPO = true;
       <label class="f">Código de acesso<input type="text" id="cp-chave" autocapitalize="characters" placeholder="Fornecido pelo escritório"></label>
       <div id="cp-passo2" hidden><label class="f">Quem está preenchendo?<select id="cp-nome"></select></label></div>
       <p class="note" id="cp-msg" style="color:#b91c1c"></p>
+      <p class="note" style="font-size:11px;opacity:.6">versão 5</p>
       <button class="btn pri" id="cp-ok">Continuar</button></div>`;
     document.body.appendChild(ov);
     let cfg = null, chave = "";
@@ -570,8 +608,10 @@ window.RDO_CAMPO = true;
         if (!chave) { msg.textContent = "Digite o código de acesso."; return; }
         if (!online()) { msg.textContent = "Sem internet. Conecte para o primeiro acesso."; return; }
         msg.style.color = "inherit"; msg.textContent = "Conferindo…";
-        try { cfg = await getCfg(chave); } catch (e) { msg.style.color = "#b91c1c"; msg.textContent = e && e.message === "chave" ? "Código inválido." : "Não consegui falar com a central. Tente de novo."; return; }
-        msg.textContent = "";
+        let novo = null;
+        try { novo = await getCfg(chave); } catch (e) { msg.style.color = "#b91c1c"; msg.textContent = e && e.message === "chave" ? "Código inválido." : "Não consegui falar com a central. Tente de novo."; return; }
+        cfg = novo || {func: [], _vazia: true};
+        msg.textContent = (cfg.func || []).length ? "" : "A lista de nomes ainda não chegou da central. Escolha \"Outro\" e digite seu nome.";
         montaNomes(cfg);
         return;
       }
@@ -579,7 +619,7 @@ window.RDO_CAMPO = true;
       if (nome === "__outro") nome = (prompt("Seu nome") || "").trim();
       if (!nome) { msg.textContent = "Escolha seu nome."; return; }
       perfil = {chave, nome}; lput("perfil", perfil); lput("chave", chave);
-      if (!cfg._local) await aplicaCfg(cfg);
+      if (cfg && !cfg._local && !cfg._vazia) await aplicaCfg(cfg);
       ov.remove(); resolve();
     };
   }
@@ -598,6 +638,8 @@ window.RDO_CAMPO = true;
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", go); else go();
   });
   pronto.then(() => { barra(); status(""); agenda(2500); });
+  // a página usa isto para mostrar as fotos guardadas no celular, mesmo sem o service worker
+  window.RDO_CAMPO_IMG = async id => { try { const b = await bGet(id); if (!b) return ""; return await new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = rej; fr.readAsDataURL(b); }); } catch (e) { return ""; } };
   const NS = {db, assets, user};
   window.claude = {use: async n => { await pronto; return NS[n] || null; }};
 })();
@@ -703,7 +745,7 @@ function renderAudit(){
   if (cur.fin && cur.fin.quando) linhas.push(`Finalizado por <b>${esc(quem(cur.fin.por))}</b> em ${esc(hm(cur.fin.quando))}`);
   el.innerHTML = linhas.join("<br>") + (log.length ? `<details style="margin-top:6px"><summary>Histórico de edições (${log.length})</summary>${log.slice().reverse().map(x => `<div>${esc(hm(x.em))} · ${esc(quem(x.u))} · ${esc(x.a)}${(x.t||[]).length ? ": " + esc(x.t.join(", ")) : ""}</div>`).join("")}</details>` : "");
 }
-const TOPICOS = [["Horário", ["ini", "fim"]], ["Clima", ["clima"]], ["Condição de trabalho", ["cond"]], ["Efetivo", ["efetivo"]], ["Equipamentos", ["equip"]], ["Serviços do dia", ["serv"]], ["Programação de serviços", ["prog"]], ["Manutenção", ["man"]], ["Programação de manutenção", ["manProg"]], ["Ocorrências", ["ocor"]], ["Materiais", ["mat"]], ["DDS", ["seg"]], ["Observações gerais", ["obs"]], ["Observações da fiscalização", ["fisc"]], ["Fotos", ["fotos"]], ["Localização", ["loc"]], ["Assinaturas", ["resp", "fiscal"]]];
+const TOPICOS = [["Tipo do dia", ["semServ", "semMot", "semObs"]], ["Obra finalizada", ["obraFin"]], ["Horário", ["ini", "fim"]], ["Clima", ["clima"]], ["Condição de trabalho", ["cond"]], ["Efetivo", ["efetivo"]], ["Equipamentos", ["equip"]], ["Serviços do dia", ["serv"]], ["Programação de serviços", ["prog"]], ["Manutenção", ["man"]], ["Programação de manutenção", ["manProg"]], ["Ocorrências", ["ocor"]], ["Materiais", ["mat"]], ["DDS", ["seg"]], ["Observações gerais", ["obs"]], ["Observações da fiscalização", ["fisc"]], ["Fotos", ["fotos"]], ["Localização", ["loc"]], ["Assinaturas", ["resp", "fiscal"]]];
 function topicos(antes, depois){
   const j = v => JSON.stringify(v === undefined ? null : v);
   const limpa = (k, v) => k === "efetivo" ? (v||[]).filter(x => x.n > 0).map(x => [x.f, x.n, (x.nm||[]).slice(0, x.n)]) : v;
@@ -804,8 +846,8 @@ async function flush(path){
 }
 
 // ------------------------------------------------------------ abas
-const TABS = [["t-rdo","v-rdo"],["t-hist","v-hist"],["t-eq","v-eq"],["t-fun","v-fun"],["t-obras","v-obras"]];
-function showTab(t){ TABS.forEach(([b,v]) => { $(b).setAttribute("aria-selected", b===t); $(v).hidden = b!==t; }); if (t==="t-hist") renderHist(); if (t==="t-obras") renderObras(); if (t==="t-fun") { renderEquipe(); renderFunc(); } if (t==="t-eq") renderFrota(); window.scrollTo({top:0}); }
+const TABS = [["t-rdo","v-rdo"],["t-hist","v-hist"],["t-ger","v-ger"],["t-eq","v-eq"],["t-fun","v-fun"],["t-obras","v-obras"]];
+function showTab(t){ TABS.forEach(([b,v]) => { $(b).setAttribute("aria-selected", b===t); $(v).hidden = b!==t; }); if (t==="t-hist") renderHist(); if (t==="t-ger") renderGeral(); if (t==="t-obras") renderObras(); if (t==="t-fun") { renderEquipe(); renderFunc(); } if (t==="t-eq") renderFrota(); window.scrollTo({top:0}); }
 TABS.forEach(([b]) => $(b).onclick = () => showTab(b));
 $("goObras").onclick = () => showTab("t-obras");
 
@@ -1017,8 +1059,8 @@ function loadDay(){
   cur = curExists ? JSON.parse(JSON.stringify(rdos[id])) : blankRdo();
   ["prog","man","manProg","serv"].forEach(k => { if (!Array.isArray(cur[k])) cur[k] = []; });
   cur._from = ""; cur._n = 0;
-  const prev = Object.values(rdos).filter(r => r.obra===obraId && r.data < dia).sort((a,b) => a.data.localeCompare(b.data)).pop();
-  if (prev && ((prev.prog||[]).length || (prev.manProg||[]).length)) {
+  const prev = Object.values(rdos).filter(r => r.obra===obraId && r.data < dia && !r.semServ).sort((a,b) => a.data.localeCompare(b.data)).pop();
+  if (prev && !prev.obraFin && ((prev.prog||[]).length || (prev.manProg||[]).length)) {
     const sig = prev.data + "|" + JSON.stringify([prev.prog||[], prev.manProg||[]]);
     if (cur.progSig !== sig) {
       const vazio = v => v === "" || v == null;
@@ -1064,13 +1106,32 @@ function renderDay(){
   renderChips("cl-manha", CLIMA, cur.clima.manha, v => { cur.clima.manha = v; save(); }, ["Chuva forte"]);
   renderChips("cl-tarde", CLIMA, cur.clima.tarde, v => { cur.clima.tarde = v; save(); }, ["Chuva forte"]);
   renderChips("cond", COND, cur.cond, v => { cur.cond = v; save(); }, ["Impraticável"]);
-  renderEf(); renderEq(); renderSv();
+  renderEf(); renderEq(); renderSv(); renderTipo();
   [["f-ocor","ocor"],["f-mat","mat"],["f-seg","seg"],["f-obs","obs"],["f-fisc","fisc"],["f-resp","resp"],["f-fiscal","fiscal"]].forEach(([el,k]) => { if (document.activeElement !== $(el)) $(el).value = cur[k] || ""; });
   renderGallery(); renderLoc();
   document.querySelectorAll("#v-rdo input, #v-rdo textarea, #v-rdo button:not(.nav):not(#goObras)").forEach(x => { if (!x.closest("[data-lock]")) x.disabled = !obraId; });
   $("delRdo").hidden = !curExists || modoCampo;
   renderFin(); renderAudit();
 }
+const SEM_MOT = ["Chuva", "Pista impraticável", "Feriado / folga", "Sem frente liberada", "Aguardando material", "Equipamento parado", "Outro"];
+function renderTipo(){
+  const ss = !!cur.semServ;
+  $("tipoDia").innerHTML = [["Dia com serviço", false], ["Sem serviço", true]].map(([t, v]) => `<button class="chip ${v ? "bad" : ""}" aria-pressed="${v === ss}" data-v="${v ? 1 : 0}">${t}</button>`).join("");
+  $("tipoDia").querySelectorAll(".chip").forEach(b => b.onclick = () => { if (modoLeitura()) return; cur.semServ = b.dataset.v === "1"; if (!cur.semServ) { cur.semMot = ""; } save(); renderDay(); });
+  $("semBox").hidden = !ss;
+  if (ss) {
+    $("semMot").innerHTML = SEM_MOT.map(m => `<button class="chip" aria-pressed="${m === cur.semMot}">${esc(m)}</button>`).join("");
+    $("semMot").querySelectorAll(".chip").forEach((b, i) => b.onclick = () => { cur.semMot = SEM_MOT[i] === cur.semMot ? "" : SEM_MOT[i]; save(); renderTipo(); });
+    if (document.activeElement !== $("f-semObs")) $("f-semObs").value = cur.semObs || "";
+  }
+  document.querySelectorAll("#v-rdo [data-ss]").forEach(c => { c.hidden = ss; });
+  const of = !!cur.obraFin;
+  $("f-obraFin").checked = of; $("pgBox").hidden = of;
+  document.querySelectorAll("#v-rdo [data-of]").forEach(c => { if (!ss) c.hidden = of; });
+}
+const modoLeitura = () => !obraId;
+$("f-semObs").addEventListener("input", e => { cur.semObs = e.target.value; save(); });
+$("f-obraFin").onchange = e => { cur.obraFin = e.target.checked; save(); renderTipo(); };
 function renderChips(host, opts, val, onPick, bad = []){
   $(host).innerHTML = opts.map(o => `<button class="chip ${bad.includes(o)?"bad":""}" aria-pressed="${o===val}">${esc(o)}</button>`).join("");
   $(host).querySelectorAll(".chip").forEach((b,i) => b.onclick = () => { onPick(opts[i]===val ? "" : opts[i]); renderDay(); });
@@ -1135,8 +1196,18 @@ function renderEf(){
   $("efList").querySelectorAll("input[data-nf]").forEach(c => { c.oninput = () => { const r = cur.efetivo[+c.dataset.nf]; r.nm = r.nm || []; r.nm[+c.dataset.nk] = c.value; save(); }; c.onchange = () => renderEq(); });
   $("efList").querySelectorAll("select[data-nf]").forEach(c => c.onchange = () => { const r = cur.efetivo[+c.dataset.nf]; r.nm = r.nm || []; r.nm[+c.dataset.nk] = c.value; save(); renderEf(); renderEq(); });
   const t = cur.efetivo.reduce((s,r) => s + r.n, 0); $("efTot").textContent = `${t} pessoa${t===1?"":"s"}`;
+  fillEfNew();
 }
-$("efAdd").onclick = () => { const v = $("efNew").value.trim(); if (!v) return; cur.efetivo.push({f: v, n: 1, nm: []}); $("efNew").value = ""; save(); renderEf(); };
+const FUNC_EXTRA = ["Apontador", "Operador de espargidor", "Operador de motoniveladora", "Operador de rolo compactador", "Operador de retroescavadeira", "Operador de escavadeira", "Operador de pá carregadeira", "Operador de vibroacabadora", "Operador de usina", "Motorista de caminhão", "Motorista de caminhão prancha", "Pedreiro", "Servente", "Topógrafo", "Auxiliar de topografia", "Mecânico", "Lubrificador", "Vigia", "Almoxarife", "Laboratorista"];
+function fillEfNew(){
+  const tem = new Set(cur.efetivo.map(x => x.f.toLowerCase()));
+  const set = new Map(); [...FUNC.map(x => x.f), ...FUNC_EXTRA].forEach(f => { if (f && !tem.has(f.toLowerCase()) && !/diretor/i.test(f)) set.set(f.toLowerCase(), f); });
+  const L = [...set.values()].sort((a, b) => a.localeCompare(b));
+  $("efNewSel").innerHTML = `<option value="">+ Incluir função…</option>` + L.map(f => `<option>${esc(f)}</option>`).join("") + `<option value="__outra">Outra (digitar)</option>`;
+  $("efNew").hidden = true;
+}
+$("efNewSel").onchange = () => { const v = $("efNewSel").value; if (v === "__outra") { $("efNew").hidden = false; $("efNew").focus(); return; } $("efNew").hidden = true; if (v) $("efAdd").click(); };
+$("efAdd").onclick = () => { const sv = $("efNewSel").value; const v = (sv === "__outra" ? $("efNew").value : sv).trim(); if (!v) return; cur.efetivo.push({f: v, n: 1, nm: []}); $("efNew").value = ""; save(); renderEf(); };
 
 // equipamentos
 function opSel(i, r){
@@ -1316,11 +1387,23 @@ $("mapFile").onchange = async e => {
   }
 };
 
+function verFoto(i){
+  const f = (cur.fotos || [])[i]; if (!f) return;
+  const src = ($("gallery").querySelectorAll(".ph img")[i] || {}).src || "";
+  const ov = document.createElement("div"); ov.className = "blocker"; ov.style.flexDirection = "column"; ov.style.gap = "10px";
+  ov.innerHTML = `<img src="${esc(src)}" alt="" style="max-width:100%;max-height:72vh;border-radius:8px;background:#fff"><div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;background:transparent;box-shadow:none;padding:0"><button class="btn" data-x>Fechar</button><button class="btn" data-rmv style="background:var(--bad);color:#fff;border-color:var(--bad)">Remover foto</button></div>`;
+  document.body.appendChild(ov);
+  ov.querySelector("[data-x]").onclick = () => ov.remove();
+  ov.onclick = e => { if (e.target === ov) ov.remove(); };
+  ov.querySelector("[data-rmv]").onclick = async () => { ov.remove(); const g = cur.fotos.splice(i, 1)[0]; save(0); renderGallery(); if (g && g.k) IDB.del(g.k).catch(() => {}); try { if (assets && g && g.a) await assets.delete(g.a); } catch (e) {} };
+}
 function renderGallery(){
   const fs = cur.fotos || [];
   let h = ""; for (let i = 0; i < uploading; i++) h += `<div class="ph"><div class="img"><div class="spin"></div></div><div class="b"><span class="n">Enviando…</span></div></div>`;
   h += fs.map((f,i) => `<div class="ph"><div class="img"><img ${f.a ? `src="_blob/${esc(f.a)}"` : `data-k="${esc(f.k || "")}"`} alt="${esc(f.l || "Foto "+(i+1))}" loading="lazy"></div><div class="b"><span class="n">Foto ${pad(i+1)}${!f.a && f.k ? " · no aparelho" : ""}</span><input type="text" data-l="${i}" placeholder="Legenda" value="${esc(f.l)}"><button class="btn sm" data-rm="${i}">Remover</button></div></div>`).join("");
   $("gallery").innerHTML = h; fillOff($("gallery"));
+  if (window.RDO_CAMPO_IMG) $("gallery").querySelectorAll("img").forEach(async im => { const a = (im.getAttribute("src") || "").split("_blob/")[1]; if (a) { const u = await window.RDO_CAMPO_IMG(decodeURIComponent(a)); if (u) im.src = u; } });
+  $("gallery").querySelectorAll(".ph img").forEach((im, i) => { im.style.cursor = "zoom-in"; im.onclick = () => verFoto(i); });
   $("gallery").querySelectorAll("[data-l]").forEach(c => c.oninput = () => { cur.fotos[+c.dataset.l].l = c.value; save(); });
   $("gallery").querySelectorAll("[data-rm]").forEach(b => b.onclick = async () => { const f = cur.fotos.splice(+b.dataset.rm, 1)[0]; save(0); renderGallery(); if (f.k) IDB.del(f.k).catch(() => {}); try { if (assets && f.a) await assets.delete(f.a); } catch (e) {} });
   $("phTot").textContent = fs.length;
@@ -1367,6 +1450,58 @@ function renderHist(){
   $("hist").querySelectorAll(".hi").forEach(b => b.onclick = () => { dia = b.dataset.d; loadDay(); showTab("t-rdo"); });
   renderAcomp();
 }
+
+// ------------------------------------------------------------ geral: últimas RDOs de todas as obras
+let gPer = "7", gSt = "todas";
+const G_PER = [["7", "7 dias"], ["30", "30 dias"], ["tudo", "Tudo"]];
+const G_ST = [["todas", "Todas"], ["fin", "Finalizadas"], ["pend", "PDF pendente"], ["rasc", "Rascunho"]];
+function stRdo(r){
+  const f = r.fin;
+  if (!f) return {k: "rasc", t: "Rascunho", c: ""};
+  if (f.pend || (!f.url && !f.pdf)) return {k: "pend", t: "Finalizado · PDF pendente", c: "bad"};
+  const alt = f.at && r.em && f.at !== r.em;
+  return {k: "fin", t: alt ? "Finalizado · alterado depois" : "Finalizado", c: alt ? "bad" : "ok"};
+}
+function renderGeral(){
+  const sel = $("gObra"), cur0 = sel.value;
+  sel.innerHTML = `<option value="">Todas as obras</option>` + obraList().map(([id, o]) => `<option value="${esc(id)}">${esc((o.ctr ? o.ctr + " · " : "") + (o.nome || ""))}</option>`).join("");
+  sel.value = obras[cur0] ? cur0 : "";
+  $("gPer").innerHTML = G_PER.map(([k, t]) => `<button class="chip" aria-pressed="${k===gPer}" data-k="${k}">${t}</button>`).join("");
+  $("gSt").innerHTML = G_ST.map(([k, t]) => `<button class="chip" aria-pressed="${k===gSt}" data-k="${k}">${t}</button>`).join("");
+  $("gPer").querySelectorAll(".chip").forEach(b => b.onclick = () => { gPer = b.dataset.k; renderGeral(); });
+  $("gSt").querySelectorAll(".chip").forEach(b => b.onclick = () => { gSt = b.dataset.k; renderGeral(); });
+  const lim = gPer === "tudo" ? "" : addDays(today, -(+gPer - 1));
+  const todas = Object.entries(rdos).filter(([id, r]) => r && r.obra && r.data && obras[r.obra]);
+  const noPer = todas.filter(([id, r]) => !lim || r.data >= lim);
+  const num = {}; const porObra = {};
+  todas.forEach(([id, r]) => { (porObra[r.obra] = porObra[r.obra] || []).push(r.data); });
+  Object.values(porObra).forEach(l => l.sort());
+  const kp = {tot: noPer.length, fin: 0, pend: 0, rasc: 0};
+  noPer.forEach(([id, r]) => { kp[stRdo(r).k]++; });
+  $("gKpi").innerHTML = [[kp.tot, "RDOs no período"], [kp.fin, "finalizadas"], [kp.pend, "PDF pendente"], [kp.rasc, "rascunhos"]].map(([v, t]) => `<div><b>${v}</b><span>${t}</span></div>`).join("");
+  let l = noPer.filter(([id, r]) => (gSt === "todas" || stRdo(r).k === gSt) && (!sel.value || r.obra === sel.value));
+  const ord = $("gOrd").value;
+  l.sort((a, b) => ord === "data" ? (b[1].data.localeCompare(a[1].data) || (b[1].em || "").localeCompare(a[1].em || "")) : ((b[1].em || "").localeCompare(a[1].em || "") || b[1].data.localeCompare(a[1].data)));
+  $("gTot").textContent = l.length ? `${l.length} RDO${l.length > 1 ? "s" : ""}` : "";
+  resolveNomes(l.map(([id, r]) => (r.alt && r.alt.u) || (r.cri && r.cri.u)).filter(Boolean));
+  const quem = r => { const u = (r.alt && r.alt.u) || (r.cri && r.cri.u); return u ? (NOMES[u] || (/^campo:/.test(u) ? u.slice(6) : "")) : ""; };
+  $("gList").innerHTML = l.length ? l.map(([id, r]) => {
+    const o = obras[r.obra] || {}, st = stRdo(r);
+    const n = (porObra[r.obra] || []).indexOf(r.data) + 1;
+    const ef = (r.efetivo || []).reduce((s, x) => s + (x.n || 0), 0), eq = (r.equip || []).filter(x => x.on).length;
+    const app = ((r.log || []).some(x => /^campo:/.test(x.u || "")) ? " · app de campo" : "") + (r.semServ ? " · sem serviço" + (r.semMot ? " (" + esc(r.semMot) + ")" : "") : "") + (r.obraFin ? " · obra finalizada" : "");
+    const pdf = r.fin && r.fin.url ? ` · <a href="${esc(r.fin.url)}" target="_blank" rel="noopener" data-pdf>PDF no Drive</a>` : "";
+    return `<button class="hi" style="grid-template-columns:auto 1fr" data-o="${esc(r.obra)}" data-d="${esc(r.data)}"><span class="num">nº ${pad(n)}</span><span><span class="pill">${esc(o.ctr || "")}</span> <span class="t">${esc(o.nome || "")}</span><br><span class="t">${dataBR(r.data)} · ${dow(r.data)}</span> <span class="pill ${st.c}">${esc(st.t)}</span><br><span class="s">${ef} pessoas · ${eq} equip. · ${(r.serv || []).length} serviço(s) · ${(r.fotos || []).length} foto(s)</span><br><span class="s2">${quem(r) ? "por " + esc(quem(r)) + " · " : ""}${r.em ? "atualizado " + esc(hm(r.em)) : ""}${app}${pdf}</span></span></button>`;
+  }).join("") : `<div class="empty">Nenhuma RDO com esses filtros.</div>`;
+  $("gList").querySelectorAll("[data-pdf]").forEach(a => a.onclick = e => e.stopPropagation());
+  $("gList").querySelectorAll(".hi").forEach(b => b.onclick = () => { obraId = b.dataset.o; dia = b.dataset.d; saveLocal(); loadDay(); showTab("t-rdo"); });
+  const hoje = new Set(todas.filter(([id, r]) => r.data === today).map(([id, r]) => r.obra));
+  const sem = obraList().filter(([id]) => !hoje.has(id));
+  $("gSemTot").textContent = sem.length ? `${sem.length} de ${obraList().length}` : "todas com RDO";
+  $("gSem").innerHTML = sem.length ? sem.map(([id, o]) => `<button class="chip" data-o="${esc(id)}">${esc((o.ctr ? o.ctr + " · " : "") + (o.nome || ""))}</button>`).join("") : `<span class="note">Todas as obras já têm RDO de hoje.</span>`;
+  $("gSem").querySelectorAll(".chip").forEach(b => b.onclick = () => { obraId = b.dataset.o; dia = today; saveLocal(); loadDay(); showTab("t-rdo"); });
+}
+$("gObra").onchange = renderGeral; $("gOrd").onchange = renderGeral;
 
 function renderAcomp(){
   const pl = PL(); $("acompCard").hidden = !pl.length; if (!pl.length) return;
@@ -1549,18 +1684,24 @@ async function makePdf(){
   const idRows = [[K("Contratante"), d(o.cli), K("Data"), `${dataBR(r.data)} (${dow(r.data)})`], [K("Local"), d(o.local), K("Horário"), `${d(r.ini)} às ${d(r.fim)}`], [K("Clima"), `Manhã: ${d(r.clima.manha)} · Tarde: ${d(r.clima.tarde)}`, K("Condição"), d(r.cond)]];
   if (prazo) idRows.push([K("Prazo"), prazo, K("Contrato"), d(o.ctr)]);
   table([.16, .34, .14, .36], null, idRows, {size: 8.6});
+  if (r.semServ) box("Dia sem serviço", [r.semMot, r.semObs].filter(Boolean).join(" · ") || "Sem serviço");
   const ef = r.efetivo.filter(x => x.n > 0);
   section("Efetivo");
   table([.78, .22], ["Função", "Qtd."], ef.length ? ef.map(x => { const ns = (x.nm||[]).slice(0, x.n).filter(v => v && v.trim()); return [{t: x.f, sub: ns.join(", ")}, {t: String(x.n), al: "r"}]; }).concat([[{t: "Total", b: true, bg: true}, {t: String(ef.reduce((s,x) => s + x.n, 0)), b: true, bg: true, al: "r"}]]) : [["Sem efetivo lançado", ""]]);
   const eq = r.equip.filter(x => x.on && (x.c || x.e || x.t));
+  if (!(r.semServ && !eq.length)) {
   section("Equipamentos");
   table([.5, .28, .22], ["Equipamento", "Situação", "Horas"], eq.length ? eq.map(x => { const f = x.c && FR[x.c]; const loc = x.prop === "Locado"; return [{t: loc ? `${x.t || "Equipamento"} · Locado` : f ? `${x.c} · ${f.cat}` : (x.e || x.t || "—"), sub: [loc ? [x.e && x.e !== x.t ? x.e : "", x.emp ? "Locadora: " + x.emp : ""].filter(Boolean).join(" · ") : f ? [f.mod, f.pl].filter(Boolean).join(" · ") : "", x.op ? "Operador: " + x.op : ""].filter(Boolean).join("\n")}, d(x.sit), {t: x.h ? String(x.h).replace(".", ",") : "—", al: "r"}]; }) : [["Sem equipamentos lançados", "", ""]]);
+  }
+  if (!(r.semServ && !r.serv.length)) {
   section("Acompanhamento diário · serviços");
   table([.15, .27, .06, .1, .1, .1, .12, .1], ["Trecho / local", "Serviço", "Un.", "Prevista", "Realizada", "Saldo", "Acum. / contrato", "Obs."], r.serv.length ? r.serv.map(x => { const it = plItem(x.i), u = it ? it.u : x.u; const has = v => v !== "" && v != null; return [d(x.l), (it ? x.i + " · " : "") + d(x.d), u || "", {t: has(x.p) ? fmt(qn(x.p)) : "—", al: "r"}, {t: has(x.q) ? fmt(qn(x.q)) : "—", al: "r"}, {t: has(x.p) && has(x.q) ? fmt(qn(x.q) - qn(x.p)) : "—", al: "r", red: has(x.p) && has(x.q) && qn(x.q) - qn(x.p) < 0}, {t: it ? `${fmt(acumulado(x.i, r.data))} / ${fmt(it.q)}` : "—", al: "r"}, x.o || ""]; }) : [["Nenhum serviço lançado", "", "", "", "", "", "", ""]], {size: 7.6});
-  if ((r.prog||[]).length) { section("Programação do dia seguinte · serviços"); table([.2, .44, .08, .12, .16], ["Trecho / local", "Serviço", "Un.", "Prevista", "Obs."], r.prog.map(x => { const it = plItem(x.i); return [d(x.l), (it ? x.i + " · " : "") + d(x.d), it ? it.u : (x.u || ""), {t: x.p ? fmt(qn(x.p)) : "—", al: "r"}, x.o || ""]; }), {size: 7.8}); }
+  }
+  if (r.obraFin) box("Programação do dia seguinte", "Obra finalizada neste dia. Não há programação para o dia seguinte.");
+  if (!r.obraFin && (r.prog||[]).length) { section("Programação do dia seguinte · serviços"); table([.2, .44, .08, .12, .16], ["Trecho / local", "Serviço", "Un.", "Prevista", "Obs."], r.prog.map(x => { const it = plItem(x.i); return [d(x.l), (it ? x.i + " · " : "") + d(x.d), it ? it.u : (x.u || ""), {t: x.p ? fmt(qn(x.p)) : "—", al: "r"}, x.o || ""]; }), {size: 7.8}); }
   const manT = x => { const cd = FR[x.pl] ? x.pl : codeOf(x.eq); return cd ? `${cd} · ${FR[cd].cat}${FR[cd].pl ? " · " + FR[cd].pl : ""}` : d(x.eq) + (x.pl ? " · " + x.pl : ""); };
   if ((r.man||[]).length) { section("Acompanhamento diário · manutenção"); table([.26, .14, .22, .22, .16], ["Equipamento", "Local", "Serviço previsto", "Serviço realizado", "Obs."], r.man.map(x => [manT(x), d(x.l), d(x.prev), d(x.real), x.o || ""]), {size: 7.8}); }
-  if ((r.manProg||[]).length) { section("Programação do dia seguinte · manutenção"); table([.3, .18, .32, .2], ["Equipamento", "Local", "Serviço previsto", "Obs."], r.manProg.map(x => [manT(x), d(x.l), d(x.prev), x.o || ""]), {size: 7.8}); }
+  if (!r.obraFin && (r.manProg||[]).length) { section("Programação do dia seguinte · manutenção"); table([.3, .18, .32, .2], ["Equipamento", "Local", "Serviço previsto", "Obs."], r.manProg.map(x => [manT(x), d(x.l), d(x.prev), x.o || ""]), {size: 7.8}); }
   const l = r.loc || {}, mu = mapsUrl(l);
   let mapImg = null;
   if (l.a || l.k) { try { mapImg = await embedImg(doc, l, 1600); } catch (e) {} }
@@ -1609,6 +1750,13 @@ async function makePdf(){
 function pendencias(){
   const P = [], r = cur, vz = v => v === "" || v == null || String(v).trim() === "";
   const add = (msg, el) => P.push({msg, el});
+  if (r.semServ) {
+    if (vz(r.clima.manha)) add("Clima da manhã", "cl-manha");
+    if (vz(r.clima.tarde)) add("Clima da tarde", "cl-tarde");
+    if (vz(r.semMot)) add("Dia sem serviço: escolha o motivo", "semMot");
+    if (vz(r.resp)) add("Responsável Amsterdam", "f-resp");
+    return P;
+  }
   if (vz(r.ini) || vz(r.fim)) add("Horário de início e término", "f-ini");
   if (vz(r.clima.manha)) add("Clima da manhã", "cl-manha");
   if (vz(r.clima.tarde)) add("Clima da tarde", "cl-tarde");
@@ -1621,10 +1769,10 @@ function pendencias(){
   eq.forEach((x, i) => { const n = i + 1; if (vz(x.t)) add(`Equipamento ${n}: tipo`, "eqList"); if (x.prop === "Locado") { if (vz(x.emp)) add(`Equipamento ${n}: empresa locadora`, "eqList"); if (vz(x.e) || x.e === x.t) add(`Equipamento ${n}: equipamento / placa`, "eqList"); } else if (!vz(x.t) && (x.t === "Outro" ? vz(x.e) : vz(x.c))) add(`Equipamento ${n}: ${x.t === "Outro" ? "nome / placa" : "prefixo / placa"}`, "eqList"); if (vz(x.op)) add(`Equipamento ${n}: operador`, "eqList"); if (vz(x.h)) add(`Equipamento ${n}: horas`, "eqList"); });
   if (!r.serv.length) add("Acompanhamento diário: lance ao menos um serviço", "svList");
   r.serv.forEach((x, i) => { const n = i + 1; if (vz(x.i) && vz(x.d)) add(`Serviço ${n}: item da planilha`, "svList"); if (vz(x.l)) add(`Serviço ${n}: trecho / local`, "svList"); if (vz(x.p)) add(`Serviço ${n}: quantidade prevista`, "svList"); if (vz(x.q)) add(`Serviço ${n}: quantidade realizada`, "svList"); });
-  if (!r.prog.length) add("Programação do dia seguinte: programe ao menos um serviço", "pgList");
-  r.prog.forEach((x, i) => { const n = i + 1; if (vz(x.i) && vz(x.d)) add(`Programação ${n}: item da planilha`, "pgList"); if (vz(x.l)) add(`Programação ${n}: trecho / local`, "pgList"); if (vz(x.p)) add(`Programação ${n}: quantidade prevista`, "pgList"); });
+  if (!r.prog.length && !r.obraFin) add("Programação do dia seguinte: programe ao menos um serviço ou marque \"Obra finalizada\"", "pgList");
+  if (!r.obraFin) r.prog.forEach((x, i) => { const n = i + 1; if (vz(x.i) && vz(x.d)) add(`Programação ${n}: item da planilha`, "pgList"); if (vz(x.l)) add(`Programação ${n}: trecho / local`, "pgList"); if (vz(x.p)) add(`Programação ${n}: quantidade prevista`, "pgList"); });
   r.man.forEach((x, i) => { const n = i + 1; if (vz(x.t) || (x.t === "Outro" ? vz(x.eq) : vz(x.pl))) add(`Manutenção ${n}: equipamento`, "mnList"); if (vz(x.l)) add(`Manutenção ${n}: local`, "mnList"); if (vz(x.prev)) add(`Manutenção ${n}: serviço previsto`, "mnList"); if (vz(x.real)) add(`Manutenção ${n}: serviço realizado`, "mnList"); });
-  r.manProg.forEach((x, i) => { const n = i + 1; if (vz(x.t) || (x.t === "Outro" ? vz(x.eq) : vz(x.pl))) add(`Programação de manutenção ${n}: equipamento`, "mpList"); if (vz(x.l)) add(`Programação de manutenção ${n}: local`, "mpList"); if (vz(x.prev)) add(`Programação de manutenção ${n}: serviço previsto`, "mpList"); });
+  if (!r.obraFin) r.manProg.forEach((x, i) => { const n = i + 1; if (vz(x.t) || (x.t === "Outro" ? vz(x.eq) : vz(x.pl))) add(`Programação de manutenção ${n}: equipamento`, "mpList"); if (vz(x.l)) add(`Programação de manutenção ${n}: local`, "mpList"); if (vz(x.prev)) add(`Programação de manutenção ${n}: serviço previsto`, "mpList"); });
   if (vz(r.ocor)) add("Paralisações e ocorrências (se não houve, escreva \"Nenhuma\")", "f-ocor");
   if (vz(r.mat)) add("Materiais recebidos (se não houve, escreva \"Nenhum\")", "f-mat");
   if (vz(r.seg)) add("Segurança do trabalho / DDS", "f-seg");
@@ -1664,8 +1812,14 @@ async function processQueue(){
 }
 function renderFin(){
   const f = cur && cur.fin;
-  if (!f) { $("finState").textContent = ""; $("fin").textContent = "Finalizar e gerar PDF"; return; }
-  if (f.pend) { $("finState").innerHTML = `<b>Finalizado ${CAMPO ? "" : "sem internet "}em ${esc(new Date(f.quando).toLocaleString("pt-BR", {dateStyle: "short", timeStyle: "short"}))}</b> · ${CAMPO ? "o PDF é gerado na central e salvo na pasta RDO da obra." : "o PDF será gerado e salvo na pasta RDO da obra quando a conexão voltar."}`; $("fin").textContent = "Gerar PDF agora"; return; }
+  $("fin").disabled = false;
+  if (!f) { $("finState").textContent = ""; $("fin").textContent = CAMPO ? "Finalizar RDO" : "Finalizar e gerar PDF"; return; }
+  if (f.pend && CAMPO) {
+    const mudou = f.at && cur.em && f.at !== cur.em;
+    $("finState").innerHTML = `<b>Finalizado em ${esc(new Date(f.quando).toLocaleString("pt-BR", {dateStyle: "short", timeStyle: "short"}))}</b> · o PDF é gerado na central e salvo na pasta RDO da obra.${mudou ? "<br>Houve alteração depois de finalizar. Finalize de novo para enviar a versão atualizada." : ""}`;
+    $("fin").textContent = mudou ? "Finalizar de novo" : "RDO finalizado ✓"; $("fin").disabled = !mudou; return;
+  }
+  if (f.pend) { $("finState").innerHTML = `<b>Finalizado ${CAMPO ? "" : "sem internet "}em ${esc(new Date(f.quando).toLocaleString("pt-BR", {dateStyle: "short", timeStyle: "short"}))}</b> · ${CAMPO ? "o PDF é gerado na central e salvo na pasta RDO da obra." : "o PDF será gerado e salvo na pasta RDO da obra quando a conexão voltar."}`; $("fin").textContent = CAMPO ? (f.at === cur.em ? "Finalizado ✓" : "Finalizar de novo (com as alterações)") : "Gerar PDF agora"; return; }
   const quando = new Date(f.quando).toLocaleString("pt-BR", {dateStyle: "short", timeStyle: "short"});
   const alterado = f.at && cur.em && f.at !== cur.em;
   $("finState").innerHTML = `<b>Finalizado em ${esc(quando)}</b>${f.url ? ` · <a href="${esc(f.url)}" target="_blank" rel="noopener">abrir PDF no Drive</a>` : f.pdf ? ` · <a href="_blob/${esc(f.pdf)}" target="_blank" rel="noopener">abrir PDF</a> (guardado na página${f.fila ? "; na fila para o Drive" : "; ainda não foi para o Drive"})` : f.fila ? " · na fila para o Drive" : " · PDF salvo só no aparelho"}${alterado ? "<br>Houve alteração depois de finalizar. Finalize de novo para gerar o PDF atualizado." : ""}`;
@@ -1704,6 +1858,7 @@ function finOffline(){
 $("fin").onclick = async () => {
   if (!obraId) return;
   if (!checaObrig()) { $("dlNote").textContent = "RDO incompleto. Preencha os itens indicados acima."; $("pend").scrollIntoView({behavior: "smooth", block: "center"}); return; }
+  if (CAMPO && cur.fin && cur.fin.pend && cur.fin.at === cur.em) { $("dlNote").textContent = "Este RDO já está finalizado. Ele vai para a central assim que o celular tiver internet."; return; }
   if (CAMPO || !online()) { finOffline(); return; }
   const btn = $("fin"); btn.disabled = true; $("dlNote").textContent = "Gerando o PDF com as fotos…";
   try { $("dlNote").textContent = await geraFinal("finalizou e gerou o PDF"); }
@@ -1748,7 +1903,9 @@ async function sobeFotos(){
   }
 }
 async function pendFin(){
-  if (CAMPO || !mcp || !db || !online() || !finPend.size) return;
+  if (CAMPO || modoCampo || !mcp || !db || !online()) return;
+  Object.entries(rdos).forEach(([id, r]) => { if (r && r.fin && r.fin.pend && !finPend.has(id)) finPend.add(id); });
+  if (!finPend.size) return;
   for (const id of [...finPend]) {
     const rr = rdos[id];
     if (!rr || !rr.fin || !rr.fin.pend) { finPend.delete(id); lsPut(FPX, finPend); continue; }
@@ -1813,15 +1970,24 @@ async function importaApp(){
   if (!mcp || !db || !assets || CAMPO || appBusy) return 0;
   appBusy = true; appMsg = ""; appRender();
   let n = 0; const novos = [];
+  const tira = async fid => { try { await drive("update_file", {fileId: fid, parentId: APP.proc}); } catch (e) { try { await drive("trash_file", {fileId: fid}); } catch (e2) {} } };
   try {
+    // arquivos já processados ficam registrados no banco, assim nada é importado duas vezes
+    const feitos = new Set();
+    try { (await db.collection("campoimp").get()).docs.forEach(d => feitos.add(d.id)); } catch (e) {}
+    const marca = async fid => { feitos.add(fid); try { await db.doc("campoimp/" + fid).set({em: new Date().toISOString()}); } catch (e) {} };
     const s = await drive("search_files", {query: `parentId = '${APP.entrada}'`, excludeContentSnippets: true, pageSize: 100});
-    const fs = (s.files || []).filter(f => /\.json$/i.test(f.title || "")).sort((a, b) => String(a.createdTime).localeCompare(String(b.createdTime)));
+    const fs = (s.files || []).filter(f => /\.json$/i.test(f.title || "") && !feitos.has(f.id)).sort((a, b) => String(a.createdTime).localeCompare(String(b.createdTime)));
+    // várias versões da mesma RDO: só a mais nova vale
+    const rdoDe = f => String(f.title || "").replace(/__\d{8}-\d{6}\.json$/i, "");
+    const ultima = {}; fs.forEach(f => { ultima[rdoDe(f)] = f; });
+    for (const f of fs) if (ultima[rdoDe(f)] !== f) { await marca(f.id); tira(f.id); }
     let fxMap = null;
-    for (const f of fs) {
+    for (const f of Object.values(ultima)) {
       let pk = null;
       try { const d = await drive("download_file_content", {fileId: f.id}); pk = JSON.parse(new TextDecoder().decode(b64Bytes(d.content || ""))); } catch (e) { continue; }
       const id = pk && pk.id, r = pk && pk.rdo;
-      if (!id || !r || !r.obra || !r.data || rdoId(r.obra, r.data) !== id) { try { await drive("update_file", {fileId: f.id, parentId: APP.proc}); } catch (e) {} continue; }
+      if (!id || !r || !r.obra || !r.data || rdoId(r.obra, r.data) !== id) { await marca(f.id); tira(f.id); continue; }
       if (!fxMap) { fxMap = {}; try { (await db.collection("campofx").get()).docs.forEach(d => { fxMap[d.id] = (d.data() || {}).a; }); } catch (e) {} }
       const fx = pk.fx || {};
       let falhou = false;
@@ -1835,10 +2001,13 @@ async function importaApp(){
         }
         x.c = lid; x.a = fxMap[did];
       }
-      if (falhou) { appMsg = "algumas fotos ainda não baixaram; tento de novo na próxima busca"; break; }
+      if (falhou) { appMsg = "algumas fotos ainda não baixaram; tento de novo na próxima busca"; continue; }
+      // se a central já gerou o PDF desta mesma finalização, mantém o PDF e não gera outro
+      const atual = rdos[id];
+      if (r.fin && r.fin.pend && atual && atual.fin && !atual.fin.pend && (atual.fin.url || atual.fin.pdf) && atual.fin.quando === r.fin.quando) r.fin = {...atual.fin};
       rdos[id] = r; queue("rdos/" + id, () => ({...rdos[id]}), 0); novos.push(id);
       if (r.fin && r.fin.pend) { finPend.add(id); lsPut(FPX, finPend); }
-      try { await drive("update_file", {fileId: f.id, parentId: APP.proc}); } catch (e) {}
+      await marca(f.id); tira(f.id);
       n++;
     }
   } catch (e) { appMsg = "não consegui ler a pasta do app (" + (MCP_ERR[e && e.code] || (e && e.code) || "erro") + ")"; }
@@ -1848,6 +2017,7 @@ async function importaApp(){
     try { [...new Set(novos)].forEach(id => { const r = rdos[id]; if (!r) return; obraId = r.obra; dia = r.data; loadDay(); syncAloc(); }); } catch (e) {}
     obraId = keep.o; dia = keep.d; loadDay();
     if (!$("v-hist").hidden) renderHist();
+    if (!$("v-ger").hidden) renderGeral();
   }
   appInfo = {...appInfo, imp: new Date().toISOString(), n}; queue("config/campo", () => ({...appInfo}), 0); appRender();
   if (n) { await pendFin(); try { await publicaApp(false); } catch (e) {} }
@@ -1861,8 +2031,8 @@ async function cicloApp(){ if (CAMPO || modoCampo || !mcp || !db || !online()) r
 let modoCampo = false, campoPreview = false;
 function aplicaModo(){
   const hide = modoCampo;
-  ["t-eq", "t-fun", "t-obras"].forEach(id => { $(id).hidden = hide; });
-  document.querySelector(".tabs").style.gridTemplateColumns = hide ? "repeat(2,1fr)" : "repeat(5,1fr)";
+  ["t-ger", "t-eq", "t-fun", "t-obras"].forEach(id => { $(id).hidden = hide; });
+  document.querySelector(".tabs").style.gridTemplateColumns = hide ? "repeat(2,1fr)" : "repeat(6,1fr)";
   $("eyebrow").textContent = hide ? "RDO · Preenchimento" : "RDO · Gerenciamento";
   $("campoBanner").hidden = !(hide && campoPreview);
   $("goObras").hidden = hide;
@@ -1915,6 +2085,7 @@ function assina(){
     const typing = document.activeElement && document.activeElement.closest && document.activeElement.closest("#v-rdo") && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);
     if (!dirty.has("rdos/"+id) && !typing) loadDay();
     if (!$("v-hist").hidden) renderHist();
+    if (!$("v-ger").hidden) renderGeral();
     if (!$("v-eq").hidden) renderFrota();
     if (!$("v-fun").hidden) renderEquipe();
   }, falha));
